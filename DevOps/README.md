@@ -1,5 +1,3 @@
----
-
 ## 🧰 Prerequisites
 
 Make sure the following tools are installed:
@@ -10,7 +8,6 @@ Make sure the following tools are installed:
 - [Helm](https://helm.sh/docs/intro/install/)
 - [mkcert](https://github.com/FiloSottile/mkcert) *(optional, for local TLS certificates)*
 
----
 
 ## 🚀 Setup Instructions
 
