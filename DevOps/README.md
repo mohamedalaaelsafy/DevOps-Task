@@ -57,8 +57,8 @@ docker push mohamedalaaelsafy/devops-task-app:latest
 
 ```bash
 export DEPLOY_PATH="./DevOps/k8s/charts"
-helm template . -f ${DEPLOY_PATH}/app/ | k apply -f - 
-helm template . -f ${DEPLOY_PATH}/app/ | k apply -f - 
+helm template . -f ${DEPLOY_PATH}/app | k apply -f - 
+helm template . -f ${DEPLOY_PATH}/db | k apply -f - 
 ```
 
 ### Test APP 
