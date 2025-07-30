@@ -1,0 +1,78 @@
+core:
+    namespace: "testing"
+    serviceName: "app"
+    deployment:
+      restartPolicy: "Always"
+      # tolerations:
+      #   - key: "env"
+      #     operator: "Equal"
+      #     value: "testing"
+      #     effect: "NoSchedule"
+      # nodeSelector:
+      #   env: "testing"
+      # volumes:
+      #   - name: env
+      #     secret:
+      #       secretName: app-secret
+      containers:
+        - image: "mohamedalaaelsafy/devops-task-app"
+          tag: "latest"
+          containerPort: "3000"
+          resources:
+            requests:
+              cpu: 400m
+              memory: 128Mi
+            limits:
+              cpu: 800m
+              memory: 1200Mi
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+            timeoutSeconds: 60
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 1    
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000            
+            timeoutSeconds: 60
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            failureThreshold: 1
+          # volumeMounts:
+          #   - name: env
+          #     mountPath: /var/www/.env
+          #     subPath: env 
+
+
+    service:
+      - name: app-svc
+        selector: app
+        type: ClusterIP
+        ports:
+          - port: 3000
+            targetPort: 3000
+            protocol: TCP
+
+    # secrets:
+    #   - name: app-secret
+    #     refreshInterval: 1m
+    #     target:
+    #       name: app-secret
+    #     data:
+    #       - secretKey: env
+    #         remoteRef:
+    #           key: app
+
+    ingress:
+      name: "app-ingress"
+      ingressClassName: "nginx"
+      annotations:
+        nginx.ingress.kubernetes.io/rewrite-target: "/"
+        cert-manager.io/cluster-issuer: "selfsigned-issuer"
+      hosts:
+        - host: "app.testing.local"
+          serviceName: "app-svc"
+          servicePort: 3000

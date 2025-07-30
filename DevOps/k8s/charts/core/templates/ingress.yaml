@@ -1,0 +1,34 @@
+{{- if and .Values.ingress .Values.ingress.name }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: {{ .Values.ingress.name }}
+  labels:
+    app: {{ .Values.serviceName }}
+  {{- if .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml .Values.ingress.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.ingressClassName | default "nginx" }}
+  rules:
+  {{- range $host := .Values.ingress.hosts }}
+    - host: {{ $host.host }}
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ $host.serviceName }}
+              port:
+                number: {{ $host.servicePort }}
+  {{- end }}
+  tls:
+  {{- range $host := .Values.ingress.hosts }}
+    - hosts:
+      - {{ $host.host }}
+      secretName: {{ $host.host | replace ".net" "" | replace "*" "asterisk" | replace "." "-" }}
+  {{- end }}
+{{- end }}

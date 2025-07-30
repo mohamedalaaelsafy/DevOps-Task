@@ -1,0 +1,17 @@
+{{- if .Values.pv.enabled }}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.pv.name }}
+  labels:
+    type: {{ .Values.pv.type | default "local" }}
+spec:
+  capacity:
+    storage: {{ .Values.pv.storage }}
+  accessModes:
+    - {{ .Values.pv.accessMode | default "ReadWriteOnce" }}
+  persistentVolumeReclaimPolicy: {{ .Values.pv.reclaimPolicy | default "Retain" }}
+  storageClassName: ""  # <-- must be empty for static binding
+  hostPath:
+    path: {{ .Values.pv.hostPath }}
+{{- end }}

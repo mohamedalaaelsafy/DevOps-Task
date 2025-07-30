@@ -1,0 +1,123 @@
+{{- if .Values.statefulset }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ $.Values.serviceName }}
+  namespace: {{ $.Values.namespace | default "" }}
+  labels:
+    app: {{ $.Values.serviceName }}
+  {{- if .Values.statefulset.annotations }}
+  annotations:
+    {{- toYaml .Values.statefulset.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  serviceName: {{ $.Values.serviceName }}
+  replicas: {{ .Values.statefulset.replicas }}
+  selector:
+    matchLabels:
+      app: {{ $.Values.serviceName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $.Values.serviceName }}
+    spec:
+      {{- if .Values.statefulset.tolerations }}
+      tolerations:
+      {{- range $value := .Values.statefulset.tolerations }}
+      - key: {{ $value.key }}
+        operator: {{ $value.operator }}
+        value: {{ $value.value }}
+        effect: {{ $value.effect }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.statefulset.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.statefulset.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.restartPolicy }}
+      restartPolicy: {{ .Values.restartPolicy | default "Always" }}
+      {{- end }}
+      {{- if .Values.serviceAccountName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      {{- end }}
+      containers:
+      {{- range $index, $value := .Values.statefulset.containers }}
+      - image: {{ $value.image }}:{{ $value.tag }}
+        imagePullPolicy: {{ $value.pullPolicy | default "Always" }}
+        name: {{ $.Values.serviceName }}-{{ add $index 1 }}
+        securityContext:
+          runAsUser: {{ $value.runAsUser }}
+          allowPrivilegeEscalation: false
+          privileged: false
+        {{- if $value.resources }}
+        resources:
+          {{- toYaml $value.resources | nindent 10 }}
+        {{- end }}
+        {{- if $value.command }}
+        command: {{ $value.command }}
+        {{- end }}
+        {{- if $value.args }}
+        args: {{ $value.args }}
+        {{- end }}
+        {{- if $value.livenessProbe }} {{- include "livenessProbe" $value | trim | nindent 8 }} {{- end }}
+        {{- if $value.readinessProbe }} {{- include "readinessProbe" $value | trim | nindent 8 }} {{- end }}
+        {{- if $value.startupProbe }} {{- include "startupProbe" $value | trim | nindent 8 }} {{- end }}
+        {{- if $value.envFrom }}
+        envFrom:
+        {{- range $env := $value.envFrom }}
+        - secretRef:
+            name: {{ $env.secretRef.name }}
+        {{- end }}
+        {{- end }}
+        {{- if $value.env }}
+        env:
+        {{- range $env := $value.env }}
+        - name: {{ $env.name }}
+          value: {{ $env.value | quote }}
+        {{- end }}
+        {{- end }}
+        ports:
+        - containerPort: {{ $value.containerPort }}
+          {{- if $value.containerName }}
+          name: {{ $value.containerName }}
+          {{- end }}
+        {{- if $value.volumeMounts }}
+        volumeMounts:
+        {{- range $mount := $value.volumeMounts }}
+        - name: {{ $mount.name }}
+          mountPath: {{ $mount.mountPath }}
+          {{- if $mount.subPath }}
+          subPath: {{ $mount.subPath }}
+          {{- end }}
+          {{- if $mount.readOnly }}
+          readOnly: {{ $mount.readOnly }}
+          {{- end }}
+        {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- if .Values.statefulset.volumes }}
+      volumes:
+      {{- range $volume := .Values.statefulset.volumes }}
+      - name: {{ $volume.name }}
+        {{- if $volume.secret }}
+        secret:
+          secretName: {{ $volume.secret.secretName }}
+        {{- else if $volume.configMap }}
+        configMap:
+          name: {{ $volume.configMap.name }}
+        {{- else if $volume.emptyDir }}
+        emptyDir: {{ $volume.emptyDir }}
+        {{- else if $volume.persistentVolumeClaim }}
+        persistentVolumeClaim:
+          claimName: {{ $volume.persistentVolumeClaim.claimName }}
+        {{- else if $volume.csi }}
+        csi:
+          driver: "secrets-store.csi.k8s.io"
+          volumeAttributes:
+            secretProviderClass: {{ $volume.csi.secretProviderClass }}
+            readOnly: "true"
+        {{- end }}
+      {{- end }}
+      {{- end }}
+---
+{{- end }}

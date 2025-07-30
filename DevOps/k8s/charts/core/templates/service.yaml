@@ -1,0 +1,32 @@
+{{- if .Values.service }}
+{{- range $value := .Values.service }}
+kind: Service
+apiVersion: v1
+metadata:
+  namespace: testing
+  name: {{ .name }}
+  labels:
+    app: {{ .name }}
+  {{- if .labels }}
+    {{- toYaml .labels | nindent 4 }}
+  {{- end }}
+  {{- if .annotations }}
+  annotations:
+    {{- toYaml .annotations | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    app: {{ .selector }}
+  type: {{ .type | default  "ClusterIP"}}
+  ports:
+  {{- range  $value := .ports }}
+    - protocol: {{ ($value.protocol) | default "TCP" }}
+      {{- if $value.name }}
+      name: {{ $value.name }}
+      {{- end }}
+      port: {{ $value.port }}
+      targetPort: {{- if  $value.targetPort }} {{ $value.targetPort }} {{- else }} {{ $value.port }} {{- end }}
+  {{- end }}
+---
+{{- end }}
+{{- end }}
