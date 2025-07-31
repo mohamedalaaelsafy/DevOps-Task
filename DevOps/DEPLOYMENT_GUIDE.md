@@ -68,3 +68,5 @@ echo "127.0.0.1 app.testing.local" >> /etc/hosts
 ```
 Open https://app.testing.local in your browser
 
+For Database Endpoint
+https://app.testing.local/db-check
