@@ -19,7 +19,7 @@ Make sure the following tools are installed:
 Create a local Kubernetes cluster using the provided configuration file:
 
 ```bash
-kind create cluster --config DevOps/infra/kind-config.yaml
+kind create cluster --config DevOps/infra/kind-config.yaml --name dev
 ```
 
 ### 2 Install Nginx
@@ -40,11 +40,10 @@ helm repo add jetstack https://charts.jetstack.io
 helm repo update
 
 helm install cert-manager jetstack/cert-manager \
-  --namespace cert-manager --create-namespace \
-  -f ./DevOps/k8s/cert-manager/values.yaml
+  --namespace cert-manager --create-namespace --set installCRDs=true
 
 # For Self Sign Certificate
-kubectl apply -f ./DevOps/k8s/cert-manager//cluster-issuer.yaml
+kubectl apply -f ./DevOps/k8s/cert-manager/cluster-issuer.yaml
 ```
 
 ### 4 Build the APP  and push to DockerHub
@@ -59,9 +58,10 @@ docker push mohamedalaaelsafy/devops-task-app:latest
 ### 5 Deploy APP and DB
 
 ```bash
+k create ns testing
 export DEPLOY_PATH="./DevOps/k8s/charts"
-helm template . -f ${DEPLOY_PATH}/app/ | k apply -f - 
-helm template . -f ${DEPLOY_PATH}/app/ | k apply -f - 
+helm template ${DEPLOY_PATH}/app -f ${DEPLOY_PATH}/app/testing.yaml | k apply -f -
+helm template ${DEPLOY_PATH}/db -f ${DEPLOY_PATH}/db/testing.yaml | k apply -f -
 ```
 
 ### Test APP 

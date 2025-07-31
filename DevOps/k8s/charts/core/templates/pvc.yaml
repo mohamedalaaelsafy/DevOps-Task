@@ -10,6 +10,6 @@ spec:
   resources:
     requests:
       storage: {{ .Values.pvc.storage }}
-  storageClassName: ""  # <-- must also be empty
-  volumeName: {{ .Values.pv.name }}  # <-- must match PV
+  storageClassName: ""
+  volumeName: {{ .Values.pv.name }} 
 {{- end }}

@@ -4,12 +4,9 @@ core:
     statefulset:
       restartPolicy: "Always"
       volumes:
-        - name: env
+        - name: postgres-data
           persistentVolumeClaim:
             claimName: postgres-pvc
-      envFrom:
-        - secretRef:
-            name: db-secret
       containers:
         - image: "postgres"
           tag: "latest"
@@ -21,6 +18,9 @@ core:
             limits:
               cpu: 800m
               memory: 1200Mi
+          envFrom:
+            - secretRef:
+                name: db-secret
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data 
