@@ -1,3 +1,4 @@
+require('dotenv').config({ path: 'testing.env' });
 const { Pool } = require('pg');
 
 const pool = new Pool({
