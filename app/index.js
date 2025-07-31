@@ -24,10 +24,6 @@ app.get('/db-check', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
-
 app.get('/db-check', async (req, res) => {
   try {
     const result = await pool.query('SELECT NOW()');
