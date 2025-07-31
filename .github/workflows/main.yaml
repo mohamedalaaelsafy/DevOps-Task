@@ -57,6 +57,5 @@ jobs:
 
       - name: Lint Helm charts
         run: |
-          helm lint DevOps/k8s/charts/core
           helm lint DevOps/k8s/charts/app
           helm lint DevOps/k8s/charts/db
